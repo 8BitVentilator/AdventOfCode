@@ -11,8 +11,10 @@ public partial class Puzzle : IPuzzle
         => Solve(input, @"\d|one|two|three|four|five|six|seven|eight|nine");
 
     private static object Solve(string[] input, string regex)
-        => input.Select(line => (First: Regex.Match(line, regex).Value, Last: Regex.Match(line, regex, RegexOptions.RightToLeft).Value))
-                .Sum(matches => 10 * Digit(matches.First) + Digit(matches.Last));
+        => input.Select(line => (
+                First: Regex.Match(line, regex).Value, 
+                Last: Regex.Match(line, regex, RegexOptions.RightToLeft).Value)
+            ).Sum(matches => 10 * Digit(matches.First) + Digit(matches.Last));
 
     private static int Digit(string text) => text switch
     {
