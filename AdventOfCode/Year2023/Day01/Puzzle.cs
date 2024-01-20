@@ -2,7 +2,7 @@ using System.Text.RegularExpressions;
 
 namespace AdventOfCode.Year2023.Day01;
 
-public partial class Puzzle : IPuzzle
+public class Puzzle : IPuzzle
 {
     public object PartOne(string[] input)
         => Solve(input, @"\d");
