@@ -1,14 +1,50 @@
+using System.Data;
+using System.Text.RegularExpressions;
+
 namespace AdventOfCode.Year2023.Day03;
 
-public class Puzzle : IPuzzle
+public partial class Puzzle : IPuzzle
 {
+    private record PartNumber(int Value, int Row, Range Columns);
+    private record Symbol(string Value, int Row, int Column);
+
+    [GeneratedRegex(@"\d+")]
+    private static partial Regex PartNumberRegex();
+
+    [GeneratedRegex(@"[^\d.]")]
+    private static partial Regex SymbolRegex();
+
+
     public object PartOne(string[] input)
-    {
-        return "";
-    }
+        => PartNumbersWithAdjacentSymbols(input)
+            .DistinctBy(x => x.PartNumber)
+            .Sum(x => x.PartNumber.Value);
 
     public object PartTwo(string[] input)
-    {
-        return "";
-    }
+        => PartNumbersWithAdjacentSymbols(input)
+            .GroupBy(x => x.Symbol)
+            .Where(x => x.Key.Value == "*" && x.Count() == 2)
+            .Sum(x => x.Aggregate(1, (x, y) => x * y.PartNumber.Value));
+
+    private IEnumerable<(PartNumber PartNumber, Symbol Symbol)> PartNumbersWithAdjacentSymbols(string[] input)
+        => PartNumbers(input)
+            .SelectMany(_ => Symbols(input), (partNumber, symbol) => (partNumber, symbol))
+            .Where(x => IsAdjacent(x.partNumber, x.symbol));
+
+    private bool IsAdjacent(PartNumber partNumber, Symbol symbol)
+        => Math.Abs(symbol.Row - partNumber.Row) <= 1
+            && symbol.Column >= partNumber.Columns.Start.Value - 1
+            && symbol.Column <= partNumber.Columns.End.Value + 1;
+
+    private IEnumerable<PartNumber> PartNumbers(string[] input)
+        => Matches(input, PartNumberRegex())
+            .Select(x => new PartNumber(int.Parse(x.Match.Value), x.Row, x.Match.Index..(x.Match.Index + x.Match.Length - 1)));
+
+    private IEnumerable<Symbol> Symbols(string[] input)
+        => Matches(input, SymbolRegex())
+            .Select(x => new Symbol(x.Match.Value, x.Row, x.Match.Index));
+
+    private IEnumerable<(int Row, Match Match)> Matches(string[] input, Regex regex)
+        => input.Select((line, row) => (row, matches: regex.Matches(line)))
+            .SelectMany(x => x.matches, (x, match) => (x.row, match));
 }
