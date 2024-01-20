@@ -4,38 +4,47 @@ namespace AdventOfCode.Year2023.Day04;
 
 public partial class Puzzle : IPuzzle
 {
-    private record Card(int Id, IEnumerable<int> Numbers, IEnumerable<int> WinningNumbers);
+    private record Card(int Id, int CountMatchingNumbers);
 
-    [GeneratedRegex(@"Card\s+(\d+): ([\s\d]+) \| ([\s\d]+)")]
-    private static partial Regex CardRegex();
+    [GeneratedRegex(@"\d+")]
+    private static partial Regex NumberRegex();
 
     public object PartOne(string[] input) 
-        => Cards(input)
-            .Sum(Points);
+        => Cards(input).Sum(Points);
 
     public object PartTwo(string[] input)
+        => Copies(Cards(input).ToArray());
+
+    private int Copies(Card[] cards)
     {
-        return "";
+        var proceessedCards = new List<Card>(cards);
+        var index = 0;
+
+        while (index < proceessedCards.Count)
+        {
+            var card = proceessedCards[index++];
+            if (card.CountMatchingNumbers > 0)
+                proceessedCards.AddRange(cards.Skip(card.Id).Take(card.CountMatchingNumbers));
+        }
+
+        return proceessedCards.Count;
     }
 
     private IEnumerable<Card> Cards(string[] input)
     {
-        static Card Card(Match match)
-            => new(
-                    Id: int.Parse(match.Groups[1].Value),
-                    Numbers: match.Groups[2].Value.Split(' ', StringSplitOptions.RemoveEmptyEntries).Select(int.Parse),
-                    WinningNumbers: match.Groups[3].Value.Split(' ', StringSplitOptions.RemoveEmptyEntries).Select(int.Parse)
-                );
+        Card Card(MatchCollection matches)
+            => new(int.Parse(matches.First().Value), CountMatchingNumbers(matches));
 
-        return input.Select(line => Card(CardRegex().Match(line)));
+        int CountMatchingNumbers(MatchCollection numbers)
+            => numbers.Skip(1)
+                .GroupBy(number => number.Value)
+                .Count(group => group.Count() > 1);
+
+        return input.Select(card => Card(NumberRegex().Matches(card)));
     }
 
     private int Points(Card card)
-    {
-        var count = card.Numbers.Intersect(card.WinningNumbers).Count();
-
-        return count == 0 
+        => card.CountMatchingNumbers == 0 
             ? 0 
-            : 1 << count - 1;
-    }
+            : 1 << card.CountMatchingNumbers - 1;
 }
