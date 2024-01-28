@@ -17,6 +17,7 @@ public partial class Puzzle : IPuzzle
 
     private int Copies(Card[] cards)
     {
+        // Gibt mit Sicherheit eine bessere Lösung, die weniger Speicher benötigt.
         var proceessedCards = new List<Card>(cards);
         var index = 0;
 
