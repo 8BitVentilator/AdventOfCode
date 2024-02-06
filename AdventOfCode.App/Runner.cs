@@ -1,4 +1,5 @@
-﻿using System.Reflection;
+﻿using System.Diagnostics;
+using System.Reflection;
 using System.Text.RegularExpressions;
 
 namespace AdventOfCode.App;
@@ -23,10 +24,24 @@ internal class Runner(Settings settings)
             return $@"Year{yearAndDay[0]}\Day{yearAndDay[1]:00}";
         }
 
-        return Puzzles.Select(puzzle => new PuzzleResult(
+        var sw = new Stopwatch();
+        foreach (var puzzle in Puzzles)
+        {
+            var input = File.ReadAllLines($@"{Folder(puzzle.GetType().FullName!)}\input.txt");
+            sw.Start();
+            var resultPartOne = puzzle.PartOne(input);
+            sw.Stop();
+            var timePartOne = sw.ElapsedMilliseconds;
+
+            sw.Restart();
+            var resultPartTwo = puzzle.PartTwo(input);
+            sw.Stop();
+            var timePartTwo = sw.ElapsedMilliseconds;
+
+            yield return new PuzzleResult(
                 puzzle.GetType().FullName!,
-                puzzle.PartOne(File.ReadAllLines($@"{Folder(puzzle.GetType().FullName!)}\input.txt")),
-                puzzle.PartTwo(File.ReadAllLines($@"{Folder(puzzle.GetType().FullName!)}\input.txt")))
-        );
+                resultPartOne, timePartOne,
+                resultPartTwo, timePartTwo);
+        }
     }
 }
