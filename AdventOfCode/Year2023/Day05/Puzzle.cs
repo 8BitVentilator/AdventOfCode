@@ -1,3 +1,5 @@
+using System.Collections;
+using System.Linq;
 using System.Text.RegularExpressions;
 
 namespace AdventOfCode.Year2023.Day05;
@@ -7,77 +9,106 @@ public partial class Puzzle : IPuzzle
     [GeneratedRegex(@"\d+")]
     private static partial Regex NumberRegex();
 
-    record Map(long Destination, long Source, long Range);
+    record Seeds(ulong Start, ulong Length) : IEnumerable<ulong>
+    {
+        
+        public IEnumerator<ulong> GetEnumerator()
+        {
+            for(var i = Start; i < Start + Length; i++)
+                yield return i;
+        }
+
+        IEnumerator IEnumerable.GetEnumerator()
+            => GetEnumerator();
+    }
+
+    record Mapping(ulong Destination, ulong Source, ulong Length)
+    {
+        public ulong? Map(ulong value)
+            => value >= this.Source && value <= Source + Length - 1
+                ? Destination + (value - Source)
+                : null;
+    }
+
+    record MappingCollection(IReadOnlyCollection<Mapping> Mappings)
+    {
+        public ulong Map(ulong value)
+            => Mappings.Select(mapping => mapping.Map(value))
+                       .FirstOrDefault(x => x is not null) ?? value;
+    }
     
-    record Almanac(IReadOnlySet<long> Seeds,
-                   IReadOnlySet<Map> SeedToSoil,
-                   IReadOnlySet<Map> SoilToFertilizer,
-                   IReadOnlySet<Map> FertilizerToWater,
-                   IReadOnlySet<Map> WaterToLight,
-                   IReadOnlySet<Map> LightToTemperature,
-                   IReadOnlySet<Map> TemperatureToHumidity,
-                   IReadOnlySet<Map> HumidityToLocation);
+    record Almanac(IEnumerable<Seeds> Seeds,
+                   MappingCollection SeedToSoil,
+                   MappingCollection SoilToFertilizer,
+                   MappingCollection FertilizerToWater,
+                   MappingCollection WaterToLight,
+                   MappingCollection LightToTemperature,
+                   MappingCollection TemperatureToHumidity,
+                   MappingCollection HumidityToLocation);
 
     public object PartOne(string[] input)
     {
-        var almanac = Parse(input);
-
+        var almanac = Parse(input, ParseSeedsPartOne);
         return almanac.Seeds
-                .Select(seed => Map2(seed, almanac.SeedToSoil))
-                .Select(soil => Map2(soil, almanac.SoilToFertilizer))
-                .Select(fertilizer => Map2(fertilizer, almanac.FertilizerToWater))
-                .Select(water => Map2(water, almanac.WaterToLight))
-                .Select(light => Map2(light, almanac.LightToTemperature))
-                .Select(temperture => Map2(temperture, almanac.TemperatureToHumidity))
-                .Select(humidity => Map2(humidity, almanac.HumidityToLocation))
+                .AsParallel()
+                .Select(seeds => LowestLocation(seeds, almanac))
                 .Min();
     }
 
-
+    private ulong LowestLocation(Seeds seeds, Almanac almanac)
+        => seeds
+            .Select(almanac.SeedToSoil.Map)
+            .Select(almanac.SoilToFertilizer.Map)
+            .Select(almanac.FertilizerToWater.Map)
+            .Select(almanac.WaterToLight.Map)
+            .Select(almanac.LightToTemperature.Map)
+            .Select(almanac.TemperatureToHumidity.Map)
+            .Select(almanac.HumidityToLocation.Map)
+            .Min();
 
     public object PartTwo(string[] input)
     {
-        return "";
+        var almanac = Parse(input, ParseSeedsPartTwo);
+        return almanac.Seeds
+                .AsParallel()
+                .Select(seeds => LowestLocation(seeds, almanac))
+                .Min();
     }
 
-    private long Map2(long source, IReadOnlySet<Map> maps)
-    {
-        var map = maps.FirstOrDefault(map => source >= map.Source && source <= map.Source + map.Range);
-        
-        return map is not default(Map)
-                ? map.Destination + (source - map.Source)
-                : source;
-    }
+    private IEnumerable<Seeds> ParseSeedsPartOne(IEnumerable<ulong> seeds)
+        => seeds.Select(x => new Seeds(x, 1));
 
-    private Almanac Parse(string[] input)
+    private IEnumerable<Seeds> ParseSeedsPartTwo(IEnumerable<ulong> values)
+        => values.Chunk(2).Select(x => new Seeds(x[0], x[1]));
+
+    private Almanac Parse(string[] input, Func<IEnumerable<ulong>, IEnumerable<Seeds>> parseSeeds)
     {
         IEnumerable<string> Section(string name)
             => input.SkipWhile(line => !line.StartsWith(name))
                     .TakeWhile(line => !string.IsNullOrEmpty(line));
 
-        IReadOnlySet<long> ParseSeeds()
-            => NumberRegex().Matches(Section("seeds").First())
-                .Select(match => long.Parse(match.Value))
-                .ToHashSet();
+        IEnumerable<ulong> SeedValues()
+            => NumberRegex().Matches(Section("seeds").Single())
+                .Select(match => ulong.Parse(match.Value));
 
-        IReadOnlySet<Map> ParseMap(string name)
+        IReadOnlyCollection<Mapping> ParseMapping(string name)
             => Section(name).Skip(1)
                 .Select(line => NumberRegex().Matches(line))
-                .Select(matches => new Map(
-                    Destination: long.Parse(matches[0].Value),
-                    Source: long.Parse(matches[1].Value),
-                    Range: long.Parse(matches[2].Value)))
-                .ToHashSet();
+                .Select(matches => new Mapping(
+                    Destination: ulong.Parse(matches[0].Value),
+                    Source: ulong.Parse(matches[1].Value),
+                    Length: ulong.Parse(matches[2].Value)))
+                .ToList();
 
         return new(
-            Seeds: ParseSeeds(),
-            SeedToSoil: ParseMap("seed-to-soil map"),
-            SoilToFertilizer: ParseMap("soil-to-fertilizer map"),
-            FertilizerToWater: ParseMap("fertilizer-to-water map"),
-            WaterToLight: ParseMap("water-to-light map"),
-            LightToTemperature: ParseMap("light-to-temperature map"),
-            TemperatureToHumidity: ParseMap("temperature-to-humidity map"),
-            HumidityToLocation: ParseMap("humidity-to-location map")
+            Seeds: parseSeeds(SeedValues()),
+            SeedToSoil: new MappingCollection(ParseMapping("seed-to-soil map")),
+            SoilToFertilizer: new MappingCollection(ParseMapping("soil-to-fertilizer map")),
+            FertilizerToWater: new MappingCollection(ParseMapping("fertilizer-to-water map")),
+            WaterToLight: new MappingCollection(ParseMapping("water-to-light map")),
+            LightToTemperature: new MappingCollection(ParseMapping("light-to-temperature map")),
+            TemperatureToHumidity: new MappingCollection(ParseMapping("temperature-to-humidity map")),
+            HumidityToLocation: new MappingCollection(ParseMapping("humidity-to-location map"))
        );
     }
 }
