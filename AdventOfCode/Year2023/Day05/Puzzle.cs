@@ -1,5 +1,3 @@
-using System.Collections;
-using System.Linq;
 using System.Text.RegularExpressions;
 
 namespace AdventOfCode.Year2023.Day05;
@@ -9,35 +7,38 @@ public partial class Puzzle : IPuzzle
     [GeneratedRegex(@"\d+")]
     private static partial Regex NumberRegex();
 
-    record Seeds(ulong Start, ulong Length) : IEnumerable<ulong>
+    record Range(ulong Start, ulong Length)
     {
-        
-        public IEnumerator<ulong> GetEnumerator()
-        {
-            for(var i = Start; i < Start + Length; i++)
-                yield return i;
-        }
-
-        IEnumerator IEnumerable.GetEnumerator()
-            => GetEnumerator();
+        public ulong End => Start + Length - 1;
     }
 
-    record Mapping(ulong Destination, ulong Source, ulong Length)
+    record Mapping(ulong Destination, Range Source)
     {
-        public ulong? Map(ulong value)
-            => value >= this.Source && value <= Source + Length - 1
-                ? Destination + (value - Source)
+        public Range? Map(Range range)
+        {
+            var start = Math.Max(range.Start, Source.Start);
+            var end = Math.Min(range.End, Source.End);
+
+            return start <= end
+                ? new Range(Destination + (start - Source.Start), end - start + 1)
                 : null;
+        }
     }
 
     record MappingCollection(IReadOnlyCollection<Mapping> Mappings)
     {
-        public ulong Map(ulong value)
-            => Mappings.Select(mapping => mapping.Map(value))
-                       .FirstOrDefault(x => x is not null) ?? value;
+        public IEnumerable<Range> Map(Range range)
+        {
+            var result = Mappings.Select(mapping => mapping.Map(range))
+                                 .Where(mapping => mapping is not null);
+
+            return result.Any()
+                    ? result.Cast<Range>()
+                    : [range];
+        }
     }
     
-    record Almanac(IEnumerable<Seeds> Seeds,
+    record Almanac(IEnumerable<Range> Seeds,
                    MappingCollection SeedToSoil,
                    MappingCollection SoilToFertilizer,
                    MappingCollection FertilizerToWater,
@@ -47,41 +48,29 @@ public partial class Puzzle : IPuzzle
                    MappingCollection HumidityToLocation);
 
     public object PartOne(string[] input)
-    {
-        var almanac = Parse(input, ParseSeedsPartOne);
-        return almanac.Seeds
-                .AsParallel()
-                .Select(seeds => LowestLocation(seeds, almanac))
-                .Min();
-    }
+        => LowestLocation(Parse(input, ParseSeedsPartOne));
 
-    private ulong LowestLocation(Seeds seeds, Almanac almanac)
-        => seeds
-            .Select(almanac.SeedToSoil.Map)
-            .Select(almanac.SoilToFertilizer.Map)
-            .Select(almanac.FertilizerToWater.Map)
-            .Select(almanac.WaterToLight.Map)
-            .Select(almanac.LightToTemperature.Map)
-            .Select(almanac.TemperatureToHumidity.Map)
-            .Select(almanac.HumidityToLocation.Map)
-            .Min();
+    public object PartTwo(string[] input) 
+        => LowestLocation(Parse(input, ParseSeedsPartTwo));
 
-    public object PartTwo(string[] input)
-    {
-        var almanac = Parse(input, ParseSeedsPartTwo);
-        return almanac.Seeds
-                .AsParallel()
-                .Select(seeds => LowestLocation(seeds, almanac))
-                .Min();
-    }
+    private ulong LowestLocation(Almanac almanac)
+        => almanac.Seeds
+            .SelectMany(almanac.SeedToSoil.Map)
+            .SelectMany(almanac.SoilToFertilizer.Map)
+            .SelectMany(almanac.FertilizerToWater.Map)
+            .SelectMany(almanac.WaterToLight.Map)
+            .SelectMany(almanac.LightToTemperature.Map)
+            .SelectMany(almanac.TemperatureToHumidity.Map)
+            .SelectMany(almanac.HumidityToLocation.Map)
+            .Min(x => x.Start);
 
-    private IEnumerable<Seeds> ParseSeedsPartOne(IEnumerable<ulong> seeds)
-        => seeds.Select(x => new Seeds(x, 1));
+    private IEnumerable<Range> ParseSeedsPartOne(IEnumerable<ulong> seeds)
+        => seeds.Select(x => new Range(x, 1));
 
-    private IEnumerable<Seeds> ParseSeedsPartTwo(IEnumerable<ulong> values)
-        => values.Chunk(2).Select(x => new Seeds(x[0], x[1]));
+    private IEnumerable<Range> ParseSeedsPartTwo(IEnumerable<ulong> values)
+        => values.Chunk(2).Select(x => new Range(x[0], x[1]));
 
-    private Almanac Parse(string[] input, Func<IEnumerable<ulong>, IEnumerable<Seeds>> parseSeeds)
+    private Almanac Parse(string[] input, Func<IEnumerable<ulong>, IEnumerable<Range>> parseSeeds)
     {
         IEnumerable<string> Section(string name)
             => input.SkipWhile(line => !line.StartsWith(name))
@@ -96,9 +85,11 @@ public partial class Puzzle : IPuzzle
                 .Select(line => NumberRegex().Matches(line))
                 .Select(matches => new Mapping(
                     Destination: ulong.Parse(matches[0].Value),
-                    Source: ulong.Parse(matches[1].Value),
-                    Length: ulong.Parse(matches[2].Value)))
-                .ToList();
+                    Source: new Range(
+                        Start: ulong.Parse(matches[1].Value),
+                        Length: ulong.Parse(matches[2].Value))
+                    )
+                ).ToList();
 
         return new(
             Seeds: parseSeeds(SeedValues()),
