@@ -18,9 +18,9 @@ public class Puzzle : IPuzzle
         return Left(input).Sum(x => x * counts.GetValueOrDefault(x, 0));
     }
 
-    private IEnumerable<int> Left(string[] input)
+    private static IEnumerable<int> Left(string[] input)
         => input.Select(line => Convert.ToInt32(Regex.Match(line, @"\d+").Value));
 
-    private IEnumerable<int> Right(string[] input)
+    private static IEnumerable<int> Right(string[] input)
         => input.Select(line => Convert.ToInt32(Regex.Match(line, @"\d+", RegexOptions.RightToLeft).Value));
 }
