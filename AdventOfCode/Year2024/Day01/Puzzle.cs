@@ -5,16 +5,12 @@ namespace AdventOfCode.Year2024.Day01;
 public class Puzzle : IPuzzle
 {
     public object PartOne(string[] input)
-        => Left(input).OrderBy(x => x)
-            .Zip(Right(input).OrderBy(x => x), (left, right) => Math.Abs(right - left))
-            .Sum();
+        => Enumerable.Zip(Left(input).OrderBy(x => x), Right(input).OrderBy(x => x))
+            .Sum(x => Math.Abs(x.First - x.Second));
 
     public object PartTwo(string[] input)
     {
-        var counts = Right(input)
-            .GroupBy(x => x)
-            .ToDictionary(x => x.Key, x => x.Count());
-
+        var counts = Right(input).CountBy(x => x).ToDictionary();
         return Left(input).Sum(x => x * counts.GetValueOrDefault(x, 0));
     }
 
