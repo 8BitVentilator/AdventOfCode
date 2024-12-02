@@ -24,24 +24,35 @@ internal class Runner(Settings settings)
             return $@"Year{yearAndDay[0]}\Day{yearAndDay[1]:00}";
         }
 
+
+
         var sw = new Stopwatch();
         foreach (var puzzle in Puzzles)
         {
             var input = File.ReadAllLines($@"{Folder(puzzle.GetType().FullName!)}\input.txt");
-            sw.Start();
-            var resultPartOne = puzzle.PartOne(input);
-            sw.Stop();
-            var timePartOne = sw.ElapsedMilliseconds;
-
-            sw.Restart();
-            var resultPartTwo = puzzle.PartTwo(input);
-            sw.Stop();
-            var timePartTwo = sw.ElapsedMilliseconds;
+            var partOne = RunPuzzlePart(() => puzzle.PartOne(input));
+            var partTwo = RunPuzzlePart(() => puzzle.PartTwo(input));
 
             yield return new PuzzleResult(
                 puzzle.GetType().FullName!,
-                resultPartOne, timePartOne,
-                resultPartTwo, timePartTwo);
+                partOne.result, partOne.elapsedMilliseconds,
+                partTwo.result, partTwo.elapsedMilliseconds);
+        }
+    }
+
+    private (object? result, long? elapsedMilliseconds) RunPuzzlePart(Func<object> part)
+    {
+        try
+        {
+            var sw = Stopwatch.StartNew();
+            var result = part.Invoke();
+            sw.Stop();
+
+            return (result, sw.ElapsedMilliseconds);
+        }
+        catch (NotImplementedException)
+        {
+            return (null, null);
         }
     }
 }
