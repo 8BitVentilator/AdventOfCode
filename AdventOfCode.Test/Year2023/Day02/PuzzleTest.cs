@@ -3,7 +3,7 @@ using AdventOfCode.Year2023.Day02;
 namespace AdventOfCode.Test.Year2023.Day02;
 
 [Trait("Year", "2023")]
-public class PuzzleTest() : PuzzleTestBase(new Puzzle(), 2023, 2)
+public class PuzzleTest() : PuzzleTestBase(new Puzzle())
 {
     protected override object? Result_Example_PartOne => 8;
     protected override object? Result_Example_PartTwo => 2286;

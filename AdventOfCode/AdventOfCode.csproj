@@ -8,6 +8,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+      <EmbeddedResource Include="Year*\Day*\*.txt" />
+  </ItemGroup>
+
+  <ItemGroup>
     <None Update="Year*\Day*\*.txt">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>

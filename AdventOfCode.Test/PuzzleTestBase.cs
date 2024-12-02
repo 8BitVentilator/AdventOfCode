@@ -1,6 +1,9 @@
-﻿namespace AdventOfCode.Test;
+﻿using System.Reflection;
+using System.Text;
 
-public abstract partial class PuzzleTestBase(IPuzzle puzzle, int year, int day)
+namespace AdventOfCode.Test;
+
+public abstract partial class PuzzleTestBase(IPuzzle puzzle)
 {
     protected abstract object? Result_Example_PartOne { get; }
     protected abstract object? Result_Example_PartTwo { get; }
@@ -16,5 +19,17 @@ public abstract partial class PuzzleTestBase(IPuzzle puzzle, int year, int day)
     [Fact]
     public void PartTwo() => Assert.Equal(Result_PartTwo, puzzle.PartTwo(ReadInput("input.txt")));
 
-    private string[] ReadInput(string fileName) => File.ReadAllLines(@$"Year{year}\Day{day:00}\{fileName}");
+    private string[] ReadInput(string fileName)
+    {
+        var puzzleType = puzzle.GetType();
+        using var stream = Assembly.GetAssembly(puzzleType)!.GetManifestResourceStream($"{puzzleType.Namespace}.{fileName}");
+        using var streamReader = new StreamReader(stream!, Encoding.UTF8);
+
+        List<string> lines = [];
+        string? line;
+        while ((line = streamReader.ReadLine()) != null)
+            lines.Add(line);
+
+        return [.. lines];
+    }
 }
