@@ -3,11 +3,10 @@ using AdventOfCode.Year2024.Day01;
 namespace AdventOfCode.Test.Year2024.Day01;
 
 [Trait("Year", "2024")]
-public class PuzzleTest : PuzzleTestBase
+public class PuzzleTest() : PuzzleTestBase(new Puzzle(), 2024, 1)
 {
-    [Fact]
-    public void PartOne() => this.Test(new Puzzle().PartOne, @"Year2024\Day01\example_PartOne.txt", 11);
-
-    [Fact]
-    public void PartTwo() => this.Test(new Puzzle().PartTwo, @"Year2024\Day01\example_PartTwo.txt", 31);
+    protected override object? Result_Example_PartOne => 11;
+    protected override object? Result_Example_PartTwo => 31;
+    protected override object? Result_PartOne => 1765812;
+    protected override object? Result_PartTwo => 20520794;
 }

@@ -1,12 +1,20 @@
 ﻿namespace AdventOfCode.Test;
 
-public class PuzzleTestBase
+public abstract partial class PuzzleTestBase(IPuzzle puzzle, int year, int day)
 {
-    public void Test(Func<string[], object> method, string inputFile, object expected)
-    {
-        var input = File.ReadAllLines(inputFile);
-        var result = method(input);
+    protected abstract object? Result_Example_PartOne { get; }
+    protected abstract object? Result_Example_PartTwo { get; }
+    protected abstract object? Result_PartOne { get; }
+    protected abstract object? Result_PartTwo { get; }
 
-        Assert.Equal(expected, result);
-    }
+    [Fact]
+    public void Example_PartOne() => Assert.Equal(Result_Example_PartOne, puzzle.PartOne(ReadInput("example_PartOne.txt")));
+    [Fact]
+    public void Example_PartTwo() => Assert.Equal(Result_Example_PartTwo, puzzle.PartTwo(ReadInput("example_PartTwo.txt")));
+    [Fact]
+    public void PartOne() => Assert.Equal(Result_PartOne, puzzle.PartOne(ReadInput("input.txt")));
+    [Fact]
+    public void PartTwo() => Assert.Equal(Result_PartTwo, puzzle.PartTwo(ReadInput("input.txt")));
+
+    private string[] ReadInput(string fileName) => File.ReadAllLines(@$"Year{year}\Day{day:00}\{fileName}");
 }
