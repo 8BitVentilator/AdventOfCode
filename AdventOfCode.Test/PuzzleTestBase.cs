@@ -5,10 +5,10 @@ namespace AdventOfCode.Test;
 
 public abstract partial class PuzzleTestBase(IPuzzle puzzle)
 {
-    protected abstract object? Result_Example_PartOne { get; }
-    protected abstract object? Result_Example_PartTwo { get; }
-    protected abstract object? Result_PartOne { get; }
-    protected abstract object? Result_PartTwo { get; }
+    protected abstract object Result_Example_PartOne { get; }
+    protected abstract object Result_Example_PartTwo { get; }
+    protected abstract object Result_PartOne { get; }
+    protected abstract object Result_PartTwo { get; }
 
     [Fact]
     public void Example_PartOne() => Assert.Equal(Result_Example_PartOne, puzzle.PartOne(ReadInput("example_PartOne.txt")));
