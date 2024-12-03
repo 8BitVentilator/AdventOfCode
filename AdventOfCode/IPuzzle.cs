@@ -1,12 +1,12 @@
-﻿namespace AdventOfCode;
+﻿global using System.Text.RegularExpressions;
+
+namespace AdventOfCode;
 
 public interface IPuzzle
 {
-    object Result_Example_PartOne { get; }
-    object Result_Example_PartTwo { get; }
-    object Result_PartOne { get; }
-    object Result_PartTwo { get; }
-
+    PuzzleResult Result { get; }
     object PartOne(string[] input);
     object PartTwo(string[] input);
 }
+
+public record PuzzleResult(object ExamplePartOne, object ExamplePartTwo, object PartOne, object PartTwo);

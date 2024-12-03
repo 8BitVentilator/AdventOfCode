@@ -1,13 +1,13 @@
-using System.Text.RegularExpressions;
-
 namespace AdventOfCode.Year2023.Day05;
 
 public partial class Puzzle : IPuzzle
 {
-    public object Result_Example_PartOne => 35L;
-    public object Result_Example_PartTwo => throw new NotImplementedException();
-    public object Result_PartOne => 173706076L;
-    public object Result_PartTwo => throw new NotImplementedException();
+    public PuzzleResult Result => new(
+        ExamplePartOne: 35L,
+        ExamplePartTwo: 0,
+        PartOne: 173706076L,
+        PartTwo: 0
+    );
 
     [GeneratedRegex(@"\d+")]
     private static partial Regex NumberRegex();

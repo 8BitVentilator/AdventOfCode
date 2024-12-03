@@ -1,14 +1,13 @@
-using System.Data;
-using System.Text.RegularExpressions;
-
 namespace AdventOfCode.Year2023.Day03;
 
 public partial class Puzzle : IPuzzle
 {
-    public object Result_Example_PartOne => 4361;
-    public object Result_Example_PartTwo => 467835;
-    public object Result_PartOne => 553079;
-    public object Result_PartTwo => 84363105;
+    public PuzzleResult Result => new(
+        ExamplePartOne: 4361,
+        ExamplePartTwo: 467835,
+        PartOne: 553079,
+        PartTwo: 84363105
+    );
 
     private record PartNumber(int Value, int Row, Range Columns);
     private record Symbol(string Value, int Row, int Column);

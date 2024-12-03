@@ -6,13 +6,13 @@ namespace AdventOfCode.Test;
 public abstract partial class PuzzleTestBase(IPuzzle puzzle)
 {
     [Fact]
-    public void Example_PartOne() => Assert.Equal(puzzle.Result_Example_PartOne, puzzle.PartOne(ReadInput("example_PartOne.txt")));
+    public void Example_PartOne() => Assert.Equal(puzzle.Result.ExamplePartOne, puzzle.PartOne(ReadInput("example_PartOne.txt")));
     [Fact]
-    public void Example_PartTwo() => Assert.Equal(puzzle.Result_Example_PartTwo, puzzle.PartTwo(ReadInput("example_PartTwo.txt")));
+    public void Example_PartTwo() => Assert.Equal(puzzle.Result.ExamplePartTwo, puzzle.PartTwo(ReadInput("example_PartTwo.txt")));
     [Fact]
-    public void PartOne() => Assert.Equal(puzzle.Result_PartOne, puzzle.PartOne(ReadInput("input.txt")));
+    public void PartOne() => Assert.Equal(puzzle.Result.PartOne, puzzle.PartOne(ReadInput("input.txt")));
     [Fact]
-    public void PartTwo() => Assert.Equal(puzzle.Result_PartTwo, puzzle.PartTwo(ReadInput("input.txt")));
+    public void PartTwo() => Assert.Equal(puzzle.Result.PartTwo, puzzle.PartTwo(ReadInput("input.txt")));
 
     private string[] ReadInput(string fileName)
     {

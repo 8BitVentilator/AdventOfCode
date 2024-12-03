@@ -1,13 +1,13 @@
-using System.Text.RegularExpressions;
-
 namespace AdventOfCode.Year2023.Day04;
 
 public partial class Puzzle : IPuzzle
 {
-    public object Result_Example_PartOne => 13;
-    public object Result_Example_PartTwo => 30;
-    public object Result_PartOne => 17782;
-    public object Result_PartTwo => 8477787;
+    public PuzzleResult Result => new(
+        ExamplePartOne: 13,
+        ExamplePartTwo: 30,
+        PartOne: 17782,
+        PartTwo: 8477787
+    );
 
     private record Card(int Id, int CountMatchingNumbers);
 

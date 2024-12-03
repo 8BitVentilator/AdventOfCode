@@ -1,14 +1,13 @@
-using System.Data;
-using System.Text.RegularExpressions;
-
 namespace AdventOfCode.Year2024.Day02;
 
 public class Puzzle : IPuzzle
 {
-    public object Result_Example_PartOne => 2;
-    public object Result_Example_PartTwo => 4;
-    public object Result_PartOne => 598;
-    public object Result_PartTwo => 634;
+    public PuzzleResult Result => new(
+        ExamplePartOne: 2,
+        ExamplePartTwo: 4,
+        PartOne: 598,
+        PartTwo: 634
+    );
 
     public object PartOne(string[] input) 
         => Reports(input).Count(IsSafe);
