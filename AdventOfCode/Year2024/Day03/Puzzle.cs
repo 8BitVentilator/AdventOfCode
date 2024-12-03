@@ -4,6 +4,11 @@ namespace AdventOfCode.Year2024.Day03;
 
 public partial class Puzzle : IPuzzle
 {
+    public object Result_Example_PartOne => 161;
+    public object Result_Example_PartTwo => 48;
+    public object Result_PartOne => 191183308;
+    public object Result_PartTwo => 92082041;
+
     [GeneratedRegex(@"(?<name>mul)\((?<x>\d+),(?<y>\d+)\)")]
     private static partial Regex PartOneRegex();
 

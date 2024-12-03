@@ -4,6 +4,11 @@ namespace AdventOfCode.Year2023.Day01;
 
 public class Puzzle : IPuzzle
 {
+    public object Result_Example_PartOne => 142;
+    public object Result_Example_PartTwo => 281;
+    public object Result_PartOne => 55607;
+    public object Result_PartTwo => 55291;
+
     public object PartOne(string[] input)
         => Solve(input, @"\d");
 

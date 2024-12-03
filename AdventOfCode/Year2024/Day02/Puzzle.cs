@@ -5,6 +5,11 @@ namespace AdventOfCode.Year2024.Day02;
 
 public class Puzzle : IPuzzle
 {
+    public object Result_Example_PartOne => 2;
+    public object Result_Example_PartTwo => 4;
+    public object Result_PartOne => 598;
+    public object Result_PartTwo => 634;
+
     public object PartOne(string[] input) 
         => Reports(input).Count(IsSafe);
 
