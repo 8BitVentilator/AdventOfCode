@@ -2,7 +2,7 @@ namespace AdventOfCode.Year2024.Day03;
 
 public partial class Puzzle : IPuzzle
 {
-    public PuzzleResult Result => new(
+    public PuzzleResult Result { get; } = new(
         ExamplePartOne: 161,
         ExamplePartTwo: 48,
         PartOne: 191183308,
